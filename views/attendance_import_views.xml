@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List View -->
+    <record id="view_attendance_import_tree" model="ir.ui.view">
+        <field name="name">attendance.import.tree</field>
+        <field name="model">attendance.import</field>
+        <field name="arch" type="xml">
+            <list string="Attendance Imports">
+                <field name="name"/>
+                <field name="create_date"/>
+                <field name="state" decoration-success="state == 'imported'" decoration-danger="state == 'failed'" decoration-info="state == 'analyzed'" decoration-muted="state == 'draft'"/>
+                <field name="total_records"/>
+                <field name="successful_imports"/>
+                <field name="failed_imports"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_attendance_import_form" model="ir.ui.view">
+        <field name="name">attendance.import.form</field>
+        <field name="model">attendance.import</field>
+        <field name="arch" type="xml">
+            <form string="Attendance Import">
+                <header>
+                    <button name="action_analyze_file" 
+                            string="Analyze File" 
+                            type="object" 
+                            class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_import_attendance" 
+                            string="Import Attendance" 
+                            type="object" 
+                            class="oe_highlight"
+                            invisible="state != 'analyzed'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,analyzed,imported"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="excel_file" widget="binary" filename="file_name"/>
+                            <field name="file_name" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="import_date" readonly="1"/>
+                            <field name="imported_by" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Attendance Lines" name="attendance_lines">
+                            <field name="attendance_line_ids" readonly="1">
+                                <list>
+                                    <field name="employee_badge"/>
+                                    <field name="employee_id"/>
+                                    <field name="check_in"/>
+                                    <field name="check_out"/>
+                                    <field name="total_hours" sum="Total Hours"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Import Results" name="import_results">
+                            <group>
+                                <group>
+                                    <field name="total_records" readonly="1"/>
+                                    <field name="successful_imports" readonly="1"/>
+                                    <field name="failed_imports" readonly="1"/>
+                                </group>
+                            </group>
+                            <group string="Missing Employees" invisible="not missing_employees">
+                                <field name="missing_employees" nolabel="1" readonly="1"/>
+                            </group>
+                            <group string="Error Log" invisible="not error_log">
+                                <field name="error_log" nolabel="1" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_attendance_import" model="ir.actions.act_window">
+        <field name="name">Attendance Import</field>
+        <field name="res_model">attendance.import</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No attendance imports found
+            </p>
+            <p>
+                Import attendance records from Excel files.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_attendance_import"
+              name="Import Attendance"
+              action="action_attendance_import"
+              parent="hr_attendance.menu_hr_attendance_root"
+              sequence="100"/>
+
+    <!-- Add this before your views -->
+    <record id="seq_attendance_import" model="ir.sequence">
+        <field name="name">Attendance Import Sequence</field>
+        <field name="code">attendance.import</field>
+        <field name="prefix">IMP/%(year)s/</field>
+        <field name="padding">5</field>
+    </record>
+</odoo>

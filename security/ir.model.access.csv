@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_attendance_user,hr.attendance.user,hr_attendance.model_hr_attendance,base.group_user,1,1,1,1
+access_attendance_import_user,attendance.import.user,attendance_import.model_attendance_import,base.group_user,1,1,1,1
+access_attendance_import_line_user,attendance.import.line.user,attendance_import.model_attendance_import_line,base.group_user,1,1,1,1

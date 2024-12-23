@@ -43,7 +43,14 @@
                     </div>
                     <group>
                         <group>
-                            <field name="excel_file" widget="binary" filename="file_name"/>
+                            <field name="import_type" widget="radio"/>
+                            <field name="excel_file" 
+                                   widget="binary" 
+                                   filename="file_name"
+                                   invisible="import_type != 'file'"/>
+                            <field name="file_url" 
+                                   invisible="import_type != 'url'"
+                                   placeholder="https://example.com/attendance.xlsx"/>
                             <field name="file_name" invisible="1"/>
                         </group>
                         <group>

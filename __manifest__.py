@@ -13,6 +13,9 @@
     'author': 'Your Company',
     'website': 'https://www.yourcompany.com',
     'depends': ['hr_attendance', 'mail'],
+    'external_dependencies': {
+        'python': ['pandas', 'openpyxl', 'requests'],
+    },
     'data': [
         'security/ir.model.access.csv',
         'data/sequence.xml',

@@ -1,5 +1,6 @@
 from odoo import models, fields, api
 from odoo.exceptions import UserError
+import requests
 import pandas as pd
 import base64
 import io
@@ -17,6 +18,11 @@ class AttendanceImport(models.Model):
     name = fields.Char('Name', required=True, default=lambda self: self.env['ir.sequence'].next_by_code('attendance.import'))
     excel_file = fields.Binary(string='Excel File')
     file_name = fields.Char(string='File Name')
+    file_url = fields.Char(string='Excel File URL', help="Enter URL of the Excel file to import")
+    import_type = fields.Selection([
+        ('file', 'Upload File'),
+        ('url', 'From URL')
+    ], string='Import Type', default='file', required=True)
     state = fields.Selection([
         ('draft', 'Draft'),
         ('analyzed', 'Analyzed'),
@@ -37,16 +43,30 @@ class AttendanceImport(models.Model):
     missing_employees = fields.Text('Missing Employees', readonly=True)
     attendance_line_ids = fields.One2many('attendance.import.line', 'import_id', string='Attendance Lines')
     
-    @api.onchange('excel_file')
-    def _onchange_excel_file(self):
-        if self.excel_file and not self.file_name:
-            self.file_name = 'attendance_import.xlsx'
-        if not self.excel_file:
-            self.file_name = False
-    
+    @api.onchange('import_type')
+    def _onchange_import_type(self):
+        self.excel_file = False
+        self.file_name = False
+        self.file_url = False
+
+    def _download_file_from_url(self):
+        try:
+            response = requests.get(self.file_url)
+            response.raise_for_status()
+            self.excel_file = base64.b64encode(response.content)
+            self.file_name = self.file_url.split('/')[-1] or 'attendance_import.xlsx'
+        except Exception as e:
+            raise UserError(f"Failed to download file from URL: {str(e)}")
+
     def action_analyze_file(self):
         self.ensure_one()
         try:
+            if self.import_type == 'url' and self.file_url:
+                self._download_file_from_url()
+
+            if not self.excel_file:
+                raise UserError("Please upload a file or provide a valid URL")
+
             # Read Excel file
             excel_data = base64.b64decode(self.excel_file)
             df = pd.read_excel(io.BytesIO(excel_data))
